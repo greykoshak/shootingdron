@@ -1,59 +1,84 @@
 from tkinter import *
 
 
-class Dron:
+class Drone:
     def __init__(self):
-        full_charge = 100  # Полный заряд дрона
-        delta_e_flying = 1  # Расход энергии на единицу пройденного расстояния
-        delta_e_shooting = 3  # Расход энергии на рдин снимок
+        self.full_charge = 600  # Полный заряд дрона
+        self.delta_e_flying = 1  # Расход энергии на единицу пройденного расстояния
+        self.delta_e_shooting = 4  # Расход энергии на рдин снимок
 
     # l - кортеж, координаты начальной точки (x1, y1) и конечной точки (x2, y2)
     # l = (x1, y1, x2, y2)
     # Возвращает расстояние между точками
-    def distance(self, l: tuple) -> int:
-        return (abs(l[2] - l[0]) + abs(l[3] - l[1])) ** 0.5
+    @staticmethod
+    def distance(l: tuple) -> float:
+        return (abs(l[2] - l[0]) ** 2 + abs(l[3] - l[1]) ** 2) ** 0.5
+
+    # Максимальное расстояние полета (туда и обратно) + один снимок
+    # Зависит от начальной энергии и расхода на единицу полета и снимок
+    # Возвращает радиус круга
+    def max_radius(self) -> float:
+        max_distance = (self.full_charge - self.delta_e_shooting) / self.delta_e_flying
+        return max_distance / 2
+
+    def get_full_charge(self):
+        return self.full_charge
+
+    def set_full_charge(self, new_value):
+        self.full_charge = new_value
+        return
 
 
-class CanvasDron:
+class CanvasDrone:
     def __init__(self):
         w = root.winfo_screenwidth()  # ширина экрана
         h = root.winfo_screenheight()  # высота экрана
         w = w // 2  # середина экрана
         h = h // 2
-        w = w - 200  # смещение от середины
-        h = h - 200
-        root.geometry('500x500+{}+{}'.format(w, h))
+        w = w - 300  # смещение от середины
+        h = h - 350
+        root.geometry('900x700+{}+{}'.format(w, h))
 
 
-class PositionDron:
-    def __init__(self, radius=10):
+class PositionDrone:
+    def __init__(self, radius=10.0):
         self.radius = radius
-        root.bind('<Button-1>', self.drawing_oval)
-        self.tempX = 0
-        self.tempY = 0
+        root.bind('<Button-1>', self.drawing_circle)
+        self.start = list()  # Стартовые координаты
+        self.temp = list()  # Текщие точки
 
-    def drawing_oval(self, event):
-        self.tempX = int(event.x);
-        self.tempY = int(event.y)
-        can.create_oval(self.tempX - radius, self.tempY + radius, self.tempX + radius, self.tempY - radius,
+    def drawing_circle(self, event):
+        self.start = [int(event.x), int(event.y)]
+        can.create_oval(self.start[0] - self.radius, self.start[1] + self.radius,
+                        self.start[0] + self.radius, self.start[1] - self.radius,
                         fill="yellow")
-        root.bind('<Button-1>', self.set_title)
+        root.bind('<Button-1>', self.drawing_ellipse)
 
-    def set_title(self, event):
-        root.title("Левая кнопка мыши")
+    def drawing_ellipse(self, event):
+        self.temp = [int(event.x), int(event.y)]
+        if self.is_belong_to_circle():
+            print("Belong {} {}".format(self.temp[0], self.temp[1]))
+            # Считаем энергию, которую затратил дрон для полета в эту точку и сделал фото
+
+        else:
+            print("Not belong")
+
+    def is_belong_to_circle(self):
+        return ((self.temp[0]-self.start[0])**2 + (self.temp[1]-self.start[1])**2) <= self.radius**2
+
 
 
 root = Tk()
 root.title("Движение")
 
-can = Canvas(width=500, height=500, bg="lightgreen")
+can = Canvas(width=900, height=700, bg="lightgreen")
 can.pack()
 
-CanvasDron()
-my_dron = Dron()
-print(my_dron.distance((0, 0, 4, 3)))
+CanvasDrone()
+my_drone = Drone()
+print(my_drone.max_radius())
 
-radius = 100
-PositionDron(radius)
+r = my_drone.max_radius()
+PositionDrone(r)
 
 root.mainloop()
