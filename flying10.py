@@ -50,8 +50,7 @@ class PositionDrone:
     def drawing_circle(self, event):
         self.start = [int(event.x), int(event.y)]
         can.create_oval(self.start[0] - self.radius, self.start[1] + self.radius,
-                        self.start[0] + self.radius, self.start[1] - self.radius,
-                        fill="yellow")
+                        self.start[0] + self.radius, self.start[1] - self.radius)
         root.bind('<Button-1>', self.drawing_ellipse)
 
     def drawing_ellipse(self, event):
@@ -64,8 +63,7 @@ class PositionDrone:
             print("Not belong")
 
     def is_belong_to_circle(self):
-        return ((self.temp[0]-self.start[0])**2 + (self.temp[1]-self.start[1])**2) <= self.radius**2
-
+        return ((self.temp[0] - self.start[0]) ** 2 + (self.temp[1] - self.start[1]) ** 2) <= self.radius ** 2
 
 
 root = Tk()
