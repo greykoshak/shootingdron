@@ -41,29 +41,42 @@ class CanvasDrone:
 
 
 class PositionDrone:
-    def __init__(self, radius=10.0):
-        self.radius = radius
+    def __init__(self, obj_drone):
+        self.my_drone = obj_drone
+        self.radius = self.my_drone.max_radius()
+        self.points = list()  # Координаты движения дрона
         root.bind('<Button-1>', self.drawing_circle)
-        self.start = list()  # Стартовые координаты
-        self.temp = list()  # Текщие точки
+
+    def drawing_point(self):
+        ind = len(self.points) - 1
+        can.create_oval(self.points[ind][0] - 2, self.points[ind][1] + 2,
+                        self.points[ind][0] + 2, self.points[ind][1] - 2, fill="black")
 
     def drawing_circle(self, event):
-        self.start = [int(event.x), int(event.y)]
-        can.create_oval(self.start[0] - self.radius, self.start[1] + self.radius,
-                        self.start[0] + self.radius, self.start[1] - self.radius)
+        self.points.append((int(event.x), int(event.y)))
+        self.drawing_point()
+        can.create_oval(self.points[0][0] - self.radius, self.points[0][1] + self.radius,
+                        self.points[0][0] + self.radius, self.points[0][1] - self.radius)
         root.bind('<Button-1>', self.drawing_ellipse)
 
     def drawing_ellipse(self, event):
-        self.temp = [int(event.x), int(event.y)]
-        if self.is_belong_to_circle():
-            print("Belong {} {}".format(self.temp[0], self.temp[1]))
+        tempX = int(event.x)
+        tempY = int(event.y)
+        self.points.append((tempX, tempY))
+
+        if self.is_belong_to_circle(tempX, tempY):
+            print("Belong {} {}".format(tempX, tempY))
+            print(self.points)
+
+            self.drawing_point()
             # Считаем энергию, которую затратил дрон для полета в эту точку и сделал фото
 
         else:
             print("Not belong")
 
-    def is_belong_to_circle(self):
-        return ((self.temp[0] - self.start[0]) ** 2 + (self.temp[1] - self.start[1]) ** 2) <= self.radius ** 2
+    def is_belong_to_circle(self, tempX, tempY):
+        return ((tempX - self.points[0][0]) ** 2 + (tempY - self.points[0][1]) ** 2) \
+               <= self.radius ** 2
 
 
 root = Tk()
@@ -76,7 +89,6 @@ CanvasDrone()
 my_drone = Drone()
 print(my_drone.max_radius())
 
-r = my_drone.max_radius()
-PositionDrone(r)
+PositionDrone(my_drone)
 
 root.mainloop()
