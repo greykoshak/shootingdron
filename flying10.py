@@ -87,7 +87,7 @@ can.pack()
 
 CanvasDrone()
 my_drone = Drone()
-print(my_drone.max_radius())
+print("Радиус: {}, Энергии: {}".format(my_drone.max_radius(), my_drone.get_full_charge()))
 
 PositionDrone(my_drone)
 
