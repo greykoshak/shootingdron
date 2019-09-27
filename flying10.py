@@ -26,6 +26,7 @@ class Drone:
 
     def set_full_charge(self, new_value):
         self.full_charge = new_value
+        print("Остаток энергии: {}".format(self.get_full_charge()))
         return
 
 
@@ -70,6 +71,7 @@ class PositionDrone:
 
             self.drawing_point()
             # Считаем энергию, которую затратил дрон для полета в эту точку и сделал фото
+            self.my_drone.set_full_charge(550)
 
         else:
             print("Not belong")
