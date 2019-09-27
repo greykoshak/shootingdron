@@ -25,8 +25,8 @@ class Drone:
         return self.full_charge
 
     def set_full_charge(self, new_value):
-        self.full_charge = new_value
-        print("Остаток энергии: {}".format(self.get_full_charge()))
+        self.full_charge -= new_value
+        print("Остаток энергии: {:9.2f}".format(self.get_full_charge()))
         return
 
 
@@ -55,9 +55,9 @@ class PositionDrone:
 
     def drawing_circle(self, event):
         self.points.append((int(event.x), int(event.y)))
-        self.drawing_point()
         can.create_oval(self.points[0][0] - self.radius, self.points[0][1] + self.radius,
-                        self.points[0][0] + self.radius, self.points[0][1] - self.radius)
+                        self.points[0][0] + self.radius, self.points[0][1] - self.radius, fill="yellow")
+        self.drawing_point()
         root.bind('<Button-1>', self.drawing_ellipse)
 
     def drawing_ellipse(self, event):
@@ -66,13 +66,21 @@ class PositionDrone:
         self.points.append((tempX, tempY))
 
         if self.is_belong_to_circle(tempX, tempY):
-            print("Belong {} {}".format(tempX, tempY))
-            print(self.points)
-
             self.drawing_point()
-            # Считаем энергию, которую затратил дрон для полета в эту точку и сделал фото
-            self.my_drone.set_full_charge(550)
 
+            # Считаем энергию, которую затратил дрон для полета в эту точку и сделал фото
+            ind = len(self.points) - 1
+            dist = (self.points[ind][0], self.points[ind][1], self.points[ind - 1][0], self.points[ind - 1][1])
+            delta = self.my_drone.distance(dist)
+            delta_energy = delta * self.my_drone.delta_e_flying + self.my_drone.delta_e_shooting
+            print("dist {:9.2f} energy {:9.2f}".format(delta, delta_energy))
+
+            self.my_drone.set_full_charge(delta_energy)
+            e1 = self.my_drone.get_full_charge()
+            focus_a = ((e1 - self.my_drone.delta_e_shooting) / self.my_drone.delta_e_flying - delta) / 2
+
+            can.create_oval(self.points[0][0] - focus_a, self.points[0][1] + focus_a,
+                            self.points[ind][0] + focus_a, self.points[ind][1] - focus_a)
         else:
             print("Not belong")
 
