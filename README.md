@@ -9,3 +9,5 @@ https://python-scripts.com/tkinter-canvas-example
 myrect = canvas.create_rectangle(0,0,100,100)
 canvas.delete(myrect) #Deletes the rectangle
 
+https://habr.com/ru/post/329604/
+
