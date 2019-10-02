@@ -125,7 +125,7 @@ class CalcRoot:
         print("drawing_root: ", self.coord)
         self.obj.set_coord(self.coord)
         new_root = self.obj.get_root()
-        new_root.append(new_root[0])
+        # new_root.append(new_root[0])
 
         total = 0
 
