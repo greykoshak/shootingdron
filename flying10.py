@@ -104,11 +104,11 @@ class PositionDrone:
 
 def main():
     root = Tk()
-    root.attributes("-fullscreen", True)
+    # root.attributes("-fullscreen", True)
     root.title("Движение")
 
     can = Canvas(root, width=1400, height=820, bg="lightgreen")
-    can.pack()
+    can.pack(fill='both', expand=True)
 
     my_drone = Drone(can)
     print("Радиус: {}, Энергии: {}".format(my_drone.max_radius(), my_drone.get_full_charge()))

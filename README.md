@@ -11,3 +11,6 @@ canvas.delete(myrect) #Deletes the rectangle
 
 https://habr.com/ru/post/329604/
 
+sudo apt-get install python3-numpy
+sudo apt-get install python3-matplotlib
+
