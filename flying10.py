@@ -2,7 +2,8 @@ from tkinter import *
 
 
 class Drone:
-    def __init__(self):
+    def __init__(self, canvas):
+        self.canvas = canvas
         self.full_charge = 600  # Полный заряд дрона
         self.delta_e_flying = 1  # Расход энергии на единицу пройденного расстояния
         self.delta_e_shooting = 4  # Расход энергии на рдин снимок
@@ -30,36 +31,26 @@ class Drone:
         return
 
 
-class CanvasDrone:
-    def __init__(self):
-        w = root.winfo_screenwidth()  # ширина экрана
-        h = root.winfo_screenheight()  # высота экрана
-        w = w // 2  # середина экрана
-        h = h // 2
-        w = w - 300  # смещение от середины
-        h = h - 350
-        root.geometry('900x700+{}+{}'.format(w, h))
-
-
 class PositionDrone:
     def __init__(self, obj_drone):
         self.my_drone = obj_drone
         self.points = list()  # Координаты движения дрона
-        root.bind('<Button-1>', self.drawing_circle)
+        obj_drone.canvas.bind('<Button-1>', self.drawing_circle)
 
     def drawing_point(self):
         ind = len(self.points) - 1
-        can.create_oval(self.points[ind][0] - 2, self.points[ind][1] + 2,
-                        self.points[ind][0] + 2, self.points[ind][1] - 2, fill="black")
+        self.my_drone.canvas.create_oval(self.points[ind][0] - 2, self.points[ind][1] + 2,
+                                         self.points[ind][0] + 2, self.points[ind][1] - 2, fill="black")
 
     def drawing_circle(self, event):
         self.points.append((int(event.x), int(event.y)))
+        print("{:5.2f} {:5.2f}".format(int(event.x), int(event.x)))
         radius = self.my_drone.max_radius()
 
-        can.create_oval(self.points[0][0] - radius, self.points[0][1] + radius,
-                        self.points[0][0] + radius, self.points[0][1] - radius, fill="yellow", width=2)
+        self.my_drone.canvas.create_oval(self.points[0][0] - radius, self.points[0][1] + radius,
+                                         self.points[0][0] + radius, self.points[0][1] - radius, fill="yellow", width=2)
         self.drawing_point()
-        root.bind('<Button-1>', self.drawing_ellipse)
+        self.my_drone.canvas.bind('<Button-1>', self.drawing_ellipse)
 
     def drawing_ellipse(self, event):
         temp_x = int(event.x)
@@ -83,7 +74,7 @@ class PositionDrone:
             focus_b = (x * x - delta * delta / 4) ** 0.5
             print("a: {:5.2f} b: {:5.2f} e1: {:5.2f}".format(2 * focus_a + delta, 2 * x, e1))
 
-            can.create_oval(self.points[0][0] - focus_b, self.points[0][1] + focus_a,
+            self.my_drone.canvas.create_oval(self.points[0][0] - focus_b, self.points[0][1] + focus_a,
                             self.points[ind][0] + focus_b, self.points[ind][1] - focus_a, outline="blue", width=2)
         else:
             print("Not belong")
@@ -111,16 +102,20 @@ class PositionDrone:
             return focus_a + focus_b + self.my_drone.delta_e_shooting <= 2 * border
 
 
-root = Tk()
-root.title("Движение")
+def main():
+    root = Tk()
+    root.attributes("-fullscreen", True)
+    root.title("Движение")
 
-can = Canvas(width=900, height=700, bg="lightgreen")
-can.pack()
+    can = Canvas(root, width=1400, height=820, bg="lightgreen")
+    can.pack()
 
-CanvasDrone()
-my_drone = Drone()
-print("Радиус: {}, Энергии: {}".format(my_drone.max_radius(), my_drone.get_full_charge()))
+    my_drone = Drone(can)
+    print("Радиус: {}, Энергии: {}".format(my_drone.max_radius(), my_drone.get_full_charge()))
+    PositionDrone(my_drone)
 
-PositionDrone(my_drone)
+    root.mainloop()
 
-root.mainloop()
+
+if __name__ == '__main__':
+    main()
