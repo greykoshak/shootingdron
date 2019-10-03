@@ -8,7 +8,6 @@ class FindRoot:
     def __init__(self):
         self.coord = list()
         self.out = list()
-        print("FindRoot: ", self.coord)
 
     def set_coord(self, coord: list):
         self.coord = coord
@@ -110,7 +109,7 @@ class CalcRoot:
         self.my_drone.canvas.create_oval(x - 3, y + 3, x + 3, y - 3, fill=color)
 
     def drawing_line(self, x1, y1, x2, y2, color):
-        self.my_drone.canvas.create_line(x1, y1, x2, y2, dash=(4, 2), fill=color)
+        self.my_drone.canvas.create_line(x1, y1, x2, y2, dash=(4, 2), arrow=LAST, fill=color)
 
     def view_points(self):
         for point in self.coord:
@@ -153,7 +152,7 @@ def main():
     can.pack(fill='both', expand=True)
 
     my_drone = Drone(can)
-    print("Радиус: {}, Энергии: {}".format(my_drone.max_radius(), my_drone.get_full_charge()))
+    # print("Радиус: {}, Энергии: {}".format(my_drone.max_radius(), my_drone.get_full_charge()))
 
     # Получить массив координат для съемки
     coord = DefCoord.get_area()
