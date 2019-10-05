@@ -1,63 +1,10 @@
 from tkinter import *
 
-import numpy as np
-from numpy import sqrt
+import const
+from area import DefCoord
+from tsp import FindRoot
 
-
-class FindRoot:
-    def __init__(self):
-        self.coord = list()
-        self.out = list()
-
-    def set_coord(self, coord: list):
-        self.coord = coord
-
-    def computing(self):
-        X = [k[0] for k in self.coord]
-        Y = [k[1] for k in self.coord]
-
-        n = len(X)
-        RS, RW, RIB, s = list(), list(), list(), list();
-
-        for ib in np.arange(0, n, 1):
-            M = np.zeros([n, n])
-            for i in np.arange(0, n, 1):
-                for j in np.arange(0, n, 1):
-                    if i != j:
-                        M[i, j] = sqrt((X[i] - X[j]) ** 2 + (Y[i] - Y[j]) ** 2)
-                    else:
-                        M[i, j] = float('inf')
-
-            way = list()
-            way.append(ib)
-
-            for i in np.arange(1, n, 1):
-                s = list()
-                for j in np.arange(0, n, 1):
-                    s.append(M[way[i - 1], j])
-                way.append(s.index(min(s)))
-                for j in np.arange(0, i, 1):
-                    M[way[i], way[j]] = float('inf')
-                    M[way[i], way[j]] = float('inf')
-            S = sum([sqrt((X[way[i]] - X[way[i + 1]]) ** 2 + (Y[way[i]] - Y[way[i + 1]]) ** 2)
-                     for i in np.arange(0, n - 1, 1)]) + sqrt((X[way[n - 1]] - X[way[0]]) ** 2 +
-                                                              (Y[way[n - 1]] - Y[way[0]]) ** 2)
-            RS.append(S)
-            RW.append(way)
-            RIB.append(ib)
-
-        S = min(RS)
-        way = RW[RS.index(min(RS))]
-        ib = RIB[RS.index(min(RS))]
-
-        X1 = [X[way[i]] for i in np.arange(0, n, 1)]
-        Y1 = [Y[way[i]] for i in np.arange(0, n, 1)]
-
-        self.out = [tuple(tup) for tup in zip(X1, Y1)]
-
-    def get_root(self):
-        self.computing()
-        return self.out
+const.BASE = ()
 
 
 class Drone:
@@ -90,14 +37,28 @@ class Drone:
         return
 
 
-class DefCoord:
-    points = [(800, 400), (500, 300), (900, 500), (900, 400), (700, 100), (500, 500)]
+class DefineArea:
+    def __init__(self, obj_drone):
+        self.my_drone = obj_drone
+        self.top_left = ()
+        self.bottom_right = ()
+        obj_drone.canvas.bind('<Button-1>', self.set_area)
 
-    @classmethod
-    def get_area(cls):
-        return cls.points
+    def set_area(self, event, color="blue"):
+        self.top_left = (int(event.x), int(event.y))
+        print("Point: {:5.2f} {:5.2f}".format(event.x, event.y))
+
+        while int(event.x) < self.top_left[0] or int(event.y) < self.top_left[1]:
+            print("Point: {:5.2f} {:5.2f}".format(event.x, event.y))
+            pass
+
+        self.bottom_right = (int(event.x), int(event.y))
+
+        self.my_drone.canvas.create_rectangle(self.top_left[0], self.top_left[1],
+                                              self.bottom_right[0], self.bottom_right[1], fill=color)
 
 
+# Отображение маршрута после решения задачи комивояжера
 class CalcRoot:
     def __init__(self, obj_drone, coord: list, obj):
         self.my_drone = obj_drone
@@ -132,7 +93,7 @@ class CalcRoot:
             x1 = new_root[i][0]
             y1 = new_root[i][1]
 
-            if i == len(new_root)-1:
+            if i == len(new_root) - 1:
                 x2 = new_root[0][0]
                 y2 = new_root[0][1]
             else:
@@ -154,13 +115,17 @@ def main():
     my_drone = Drone(can)
     # print("Радиус: {}, Энергии: {}".format(my_drone.max_radius(), my_drone.get_full_charge()))
 
+    # Определить область съемки
+    DefineArea(my_drone)
+
     # Получить массив координат для съемки
-    coord = DefCoord.get_area()
-
-    r = FindRoot()  # Решение задачи комивояжера
-
-    obj = CalcRoot(my_drone, coord, r)
-    obj.view_points()
+    # area = DefCoord((300, 300, 500, 500))
+    # coord = area.get_area()
+    #
+    # r = FindRoot()  # Решение задачи комивояжера
+    #
+    # obj = CalcRoot(my_drone, coord, r)
+    # obj.view_points()
 
     root.mainloop()
 
