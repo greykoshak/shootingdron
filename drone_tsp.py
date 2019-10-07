@@ -1,8 +1,6 @@
 from tkinter import *
 
 import const
-from area import DefCoord
-from tsp import FindRoot
 
 const.BASE = ()
 
@@ -44,18 +42,16 @@ class DefineArea:
         self.bottom_right = ()
         obj_drone.canvas.bind('<Button-1>', self.set_area)
 
-    def set_area(self, event, color="blue"):
-        self.top_left = (int(event.x), int(event.y))
-        print("Point: {:5.2f} {:5.2f}".format(event.x, event.y))
-
-        while int(event.x) < self.top_left[0] or int(event.y) < self.top_left[1]:
-            print("Point: {:5.2f} {:5.2f}".format(event.x, event.y))
-            pass
-
-        self.bottom_right = (int(event.x), int(event.y))
-
-        self.my_drone.canvas.create_rectangle(self.top_left[0], self.top_left[1],
-                                              self.bottom_right[0], self.bottom_right[1], fill=color)
+    def set_area(self, event):
+        point = (int(event.x), int(event.y))
+        if not self.top_left:
+            self.top_left = point
+            self.my_drone.canvas.create_oval(point[0] - 2, point[1] + 2, point[0] + 2, point[1] - 2,
+                                                  fill="blue")
+        elif point[0] > self.top_left[0] and point[1] > self.top_left[1]:
+            self.bottom_right = point
+            self.my_drone.canvas.create_rectangle(self.top_left[0], self.top_left[1],
+                                                  self.bottom_right[0], self.bottom_right[1], dash=(4, 2))
 
 
 # Отображение маршрута после решения задачи комивояжера
@@ -116,8 +112,10 @@ def main():
     # print("Радиус: {}, Энергии: {}".format(my_drone.max_radius(), my_drone.get_full_charge()))
 
     # Определить область съемки
-    DefineArea(my_drone)
+    da = DefineArea(my_drone)
 
+    if da.top_left and da.bottom_right:
+        print("ok")
     # Получить массив координат для съемки
     # area = DefCoord((300, 300, 500, 500))
     # coord = area.get_area()
