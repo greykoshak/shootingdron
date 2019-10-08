@@ -1,13 +1,14 @@
 from tkinter import *
 
 import const
-
-const.BASE = ()
+from area import DefCoord
+from tsp import FindRoot
 
 
 class Drone:
-    def __init__(self, canvas):
-        self.canvas = canvas
+    """ Физическая модель дрона """
+
+    def __init__(self):
         self.full_charge = 600  # Полный заряд дрона
         self.delta_e_flying = 1  # Расход энергии на единицу пройденного расстояния
         self.delta_e_shooting = 4  # Расход энергии на рдин снимок
@@ -36,69 +37,98 @@ class Drone:
 
 
 class DefineArea:
-    def __init__(self, obj_drone):
-        self.my_drone = obj_drone
+    """ Определение прямоугольника, в котором надо произвести съемку """
+
+    def __init__(self, key_adapter):
+        self.ka = key_adapter
         self.top_left = ()
         self.bottom_right = ()
-        obj_drone.canvas.bind('<Button-1>', self.set_area)
+        self.ka.add_button1(self.set_area)
 
     def set_area(self, event):
         point = (int(event.x), int(event.y))
         if not self.top_left:
             self.top_left = point
-            self.my_drone.canvas.create_oval(point[0] - 2, point[1] + 2, point[0] + 2, point[1] - 2,
-                                                  fill="blue")
+            self.ka.canvas.create_oval(point[0] - 2, point[1] + 2, point[0] + 2, point[1] - 2,
+                                       fill="blue")
         elif point[0] > self.top_left[0] and point[1] > self.top_left[1]:
             self.bottom_right = point
-            self.my_drone.canvas.create_rectangle(self.top_left[0], self.top_left[1],
-                                                  self.bottom_right[0], self.bottom_right[1], dash=(4, 2))
+
+            self.ka.del_button1()
+            self.ka.canvas.create_rectangle(self.top_left[0], self.top_left[1],
+                                            self.bottom_right[0], self.bottom_right[1], dash=(4, 2))
+
+            # Получить массив координат для съемки
+            area = DefCoord((self.top_left[0], self.top_left[1],
+                             self.bottom_right[0], self.bottom_right[1]))
+            coord = area.get_area()
+            coord.append(const.BASE)
+
+            r = FindRoot(coord)  # Решение задачи комивояжера
+            new_root = r.get_root()
+
+            obj = CalcRoot(self.ka, coord, new_root)
+            obj.view_points()
+            obj.drawing_root()
 
 
-# Отображение маршрута после решения задачи комивояжера
 class CalcRoot:
-    def __init__(self, obj_drone, coord: list, obj):
-        self.my_drone = obj_drone
+    """ Отображение маршрута после решения задачи комивояжера """
+
+    def __init__(self, key_adapter, coord: list, new_root: list):
+        self.ka = key_adapter
         self.coord = coord
-        self.obj = obj
-        obj_drone.canvas.bind('<Button-1>', self.drawing_root)
+        self.root = new_root
 
     def drawing_point(self, x, y, color):
-        self.my_drone.canvas.create_oval(x - 3, y + 3, x + 3, y - 3, fill=color)
+        self.ka.canvas.create_oval(x - 2, y + 2, x + 2, y - 2, fill=color)
 
     def drawing_line(self, x1, y1, x2, y2, color):
-        self.my_drone.canvas.create_line(x1, y1, x2, y2, dash=(4, 2), arrow=LAST, fill=color)
+        self.ka.canvas.create_line(x1, y1, x2, y2, dash=(4, 2), arrow=LAST, fill=color)
 
     def view_points(self):
+        # База дрона
+        self.drawing_point(const.BASE[0], const.BASE[1], "red")
+
         for point in self.coord:
             self.drawing_point(point[0], point[1], "blue")
 
-    def drawing_root(self, event):
-        temp_x = int(event.x)
-        temp_y = int(event.y)
-        self.drawing_point(temp_x, temp_y, "red")
-        self.my_drone.canvas.bind('<Button-1>', "")
-        self.coord.append((temp_x, temp_y))
-        print("drawing_root: ", self.coord)
-        self.obj.set_coord(self.coord)
-        new_root = self.obj.get_root()
-        # new_root.append(new_root[0])
-
+    def drawing_root(self):
         total = 0
 
-        for i in range(len(new_root)):
-            x1 = new_root[i][0]
-            y1 = new_root[i][1]
+        for i in range(len(self.root)):
+            x1 = self.root[i][0]
+            y1 = self.root[i][1]
 
-            if i == len(new_root) - 1:
-                x2 = new_root[0][0]
-                y2 = new_root[0][1]
+            if i == len(self.root) - 1:
+                x2 = self.root[0][0]
+                y2 = self.root[0][1]
             else:
-                x2 = new_root[i + 1][0]
-                y2 = new_root[i + 1][1]
+                x2 = self.root[i + 1][0]
+                y2 = self.root[i + 1][1]
 
             self.drawing_line(x1, y1, x2, y2, "blue")
-            total += self.my_drone.distance((x1, y1, x2, y2))
+            total += Drone.distance((x1, y1, x2, y2))
         print("Total distance: {:7.2f}".format(total))
+
+
+class KeyAdapter:
+    """ Связывает события и кнопки """
+
+    def __init__(self, root, canvas):
+        self.root = root
+        self.canvas = canvas
+        self.canvas.bind('<Button-3>', "app_finish")
+
+    def add_button1(self, func):
+        self.canvas.bind('<Button-1>', func)
+
+    def del_button1(self):
+        self.canvas.unbind('<Button-1>')
+
+    # Выход из программы - правая кнопка мыши
+    def app_finish(self):
+        self.root.destroy()
 
 
 def main():
@@ -108,22 +138,11 @@ def main():
     can = Canvas(root, width=1400, height=820, bg="lightgreen")
     can.pack(fill='both', expand=True)
 
-    my_drone = Drone(can)
-    # print("Радиус: {}, Энергии: {}".format(my_drone.max_radius(), my_drone.get_full_charge()))
+    ka = KeyAdapter(root, can)
+    my_drone = Drone()
 
     # Определить область съемки
-    da = DefineArea(my_drone)
-
-    if da.top_left and da.bottom_right:
-        print("ok")
-    # Получить массив координат для съемки
-    # area = DefCoord((300, 300, 500, 500))
-    # coord = area.get_area()
-    #
-    # r = FindRoot()  # Решение задачи комивояжера
-    #
-    # obj = CalcRoot(my_drone, coord, r)
-    # obj.view_points()
+    da = DefineArea(ka)
 
     root.mainloop()
 

@@ -2,6 +2,8 @@ import const
 
 
 class DefCoord:
+    """ Определение массива точек аэрофотосъемки """
+
     def __init__(self, coord: tuple):
         self.points = list()
         self.xp1 = coord[0]

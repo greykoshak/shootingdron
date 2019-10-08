@@ -3,12 +3,9 @@ from numpy import sqrt
 
 
 class FindRoot:
-    def __init__(self):
-        self.coord = list()
-        self.out = list()
-
-    def set_coord(self, coord: list):
+    def __init__(self, coord):
         self.coord = coord
+        self.out = list()
 
     def computing(self):
         X = [k[0] for k in self.coord]
