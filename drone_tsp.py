@@ -118,7 +118,7 @@ class KeyAdapter:
     def __init__(self, root, canvas):
         self.root = root
         self.canvas = canvas
-        self.canvas.bind('<Button-3>', "exit_app")
+        self.canvas.bind('<Button-2>', self.exit_app)
 
     def add_button1(self, func):
         self.canvas.bind('<Button-1>', func)
@@ -128,7 +128,7 @@ class KeyAdapter:
 
     # Выход из программы - правая кнопка мыши
     @staticmethod
-    def exit_app():
+    def exit_app(self):
         sys.exit()
 
 
