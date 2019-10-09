@@ -80,18 +80,18 @@ class CalcRoot:
         self.coord = coord
         self.root = new_root
 
-    def drawing_point(self, x, y, color):
-        self.ka.canvas.create_oval(x - 2, y + 2, x + 2, y - 2, fill=color)
+    def drawing_point(self, x, y, radius=2, color="blue"):
+        self.ka.canvas.create_oval(x - radius, y + radius, x + radius, y - radius, fill=color)
 
     def drawing_line(self, x1, y1, x2, y2, color):
         self.ka.canvas.create_line(x1, y1, x2, y2, dash=(4, 2), arrow=LAST, fill=color)
 
     def view_points(self):
-        # База дрона
-        self.drawing_point(const.BASE[0], const.BASE[1], "red")
-
         for point in self.coord:
-            self.drawing_point(point[0], point[1], "blue")
+            self.drawing_point(point[0], point[1], 3, "blue")
+
+        # База дрона
+        self.drawing_point(const.BASE[0], const.BASE[1], 5, "darkred")
 
     def drawing_root(self):
         total = 0
@@ -108,7 +108,9 @@ class CalcRoot:
                 y2 = self.root[i + 1][1]
 
             self.drawing_line(x1, y1, x2, y2, "blue")
+
             total += Drone.distance((x1, y1, x2, y2))
+
         print("Total distance: {:7.2f}".format(total))
 
 
