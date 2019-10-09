@@ -120,7 +120,7 @@ class KeyAdapter:
     def __init__(self, root, canvas):
         self.root = root
         self.canvas = canvas
-        self.canvas.bind('<Button-2>', self.exit_app)
+        self.canvas.bind('<Button-3>', self.exit_app)
 
     def add_button1(self, func):
         self.canvas.bind('<Button-1>', func)
